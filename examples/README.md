@@ -6,7 +6,7 @@ This directory contains C++ example applications that demonstrate the PyTorch C+
 
 - [LibTorch](https://pytorch.org/get-started/locally/) downloaded and extracted
 - CMake 3.18 or newer
-- A C++17-compatible compiler (GCC 9+ on Linux, MSVC 2019+ on Windows)
+- A C++17-compatible compiler (GCC 9+ on Linux, MSVC 2019+ on Windows); the minimal example requires C++20
 
 ## Examples
 
