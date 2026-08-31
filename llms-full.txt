@@ -145,14 +145,14 @@ Here is an example of creating a `TensorOptions` object:
 ```
 auto options =
  torch::TensorOptions()
- .dtype(torch::kFloat32)
+ .dtype(torch::kFloat64)
  .layout(torch::kStrided)
  .device(torch::kCUDA, 1)
  .requires_grad(true);
 
 torch::Tensor tensor = torch::full({3, 4}, /*value=*/123, options);
 
-assert(tensor.dtype() == torch::kFloat32);
+assert(tensor.dtype() == torch::kFloat64);
 assert(tensor.layout() == torch::kStrided);
 assert(tensor.device().type() == torch::kCUDA);
 assert(tensor.device().index() == 1);
@@ -1984,6 +1984,10 @@ inline constexpr std::enable_if_t<std::is_constructible_v<ArrayRef<T>, Args&&...
 template<typename U, typename ...Args>
 inline constexpr ArrayRef<T> &emplace(std::initializer_list<U> il, Args&&... args) noexcept
 
+Friends
+
+inline friend bool operator==(OptionalArrayRef a1, ArrayRef<T> other)
+
 **Example:**
 
 ```
@@ -3346,7 +3350,7 @@ class StatefulDataLoader : public torch::data::DataLoaderBase<Dataset, Dataset::
 
 A dataloader for stateful datasets.
 
-A dataloader for stateful datatasets differs from one for stateless datasets one in that the dataset is shared among worker threads, and that this dataset is itself responsible for producing batches rather than depending on a sampler. The statefulness here actually refers to the dataset. The StatefulDataLoader simply alters the data loading algorithm to accommodate the stateful, shared nature of the dataset. Note that the dataset must be thread safe if more than one worker thread is used.
+A dataloader for stateful datasets differs from one for stateless datasets one in that the dataset is shared among worker threads, and that this dataset is itself responsible for producing batches rather than depending on a sampler. The statefulness here actually refers to the dataset. The StatefulDataLoader simply alters the data loading algorithm to accommodate the stateful, shared nature of the dataset. Note that the dataset must be thread safe if more than one worker thread is used.
 
 A stateful dataloader is created by calling `make_data_loader` with a stateful dataset.
 
@@ -3568,7 +3572,7 @@ A stateful dataset is a dataset that maintains some internal state, which will b
 
 Subclasses can override the `reset()` method to configure this behavior. Further, the return type of a stateful dataset's `get_batch()` method is always an `optional`. When the stateful dataset wants to indicate to the dataloader that its epoch has ended, it should return an empty optional. The dataloader knows to modify its implementation based on whether the dataset is stateless or stateful.
 
-Note that when subclassing a from `StatefulDataset<Self, T>`, the return type of `get_batch()`, which the subclass must override, will be `optional<T>` (i.e. the type specified in the `StatefulDataset` specialization is automatically boxed into an `optional` for the dataset's `BatchType`).
+Note that when subclassing from `StatefulDataset<Self, T>`, the return type of `get_batch()`, which the subclass must override, will be `optional<T>` (i.e. the type specified in the `StatefulDataset` specialization is automatically boxed into an `optional` for the dataset's `BatchType`).
 
 Public Functions
 
@@ -3688,9 +3692,9 @@ Returns the transform being applied.
 template<typename ChunkReader, typename ChunkSampler = samplers::[RandomSampler](samplers.html#_CPPv4N5torch4data8samplers13RandomSamplerE), typename ExampleSampler = samplers::[RandomSampler](samplers.html#_CPPv4N5torch4data8samplers13RandomSamplerE)>
 class ChunkDataset : public torch::data::datasets::StatefulDataset<ChunkDataset<ChunkReader, samplers::[RandomSampler](samplers.html#_CPPv4N5torch4data8samplers13RandomSamplerE), samplers::[RandomSampler](samplers.html#_CPPv4N5torch4data8samplers13RandomSamplerE)>, ChunkReader::BatchType, size_t>
 
-A stateful dataset that support hierarchical sampling and prefetching of entre chunks.
+A stateful dataset that support hierarchical sampling and prefetching of entire chunks.
 
-Unlike regular dataset, chunk dataset require two samplers to operate and keeps an internal state. `ChunkSampler` selects, which chunk to load next, while the `ExampleSampler` determines the order of Examples that are returned in each `get_batch` call. The hierarchical sampling approach used here is inspired by this paper [http://martin.zinkevich.org/publications/nips2010.pdf](http://martin.zinkevich.org/publications/nips2010.pdf)
+Unlike regular dataset, chunk dataset require two samplers to operate and keeps an internal state. `ChunkSampler` selects, which chunk to load next, while the `ExampleSampler` determines the order of Examples that are returned in each `get_batch` call. The hierarchical sampling approach used here is inspired by this paper [https://proceedings.neurips.cc/paper_files/paper/2010/file/abea47ba24142ed16b7d8fbf2c740e0d-Paper.pdf](https://proceedings.neurips.cc/paper_files/paper/2010/file/abea47ba24142ed16b7d8fbf2c740e0d-Paper.pdf)
 
 Public Types
 
@@ -4496,7 +4500,7 @@ Examples:
 ```
 
 template<typename Func>
-inline class_ &def_static(std::string name, Func func, std::string doc_string = "")
+inline class_ &def_static(std::string name, Func func, std::string doc_string = "", std::initializer_list<arg> default_args = {})
 
 Method registration API for static methods.
 
@@ -6619,15 +6623,15 @@ Pretty prints the `ParameterList` module into the given `stream`.
 
 inline void append(torch::Tensor &¶m)
 
-push the a given parameter at the end of the list
+push a given parameter at the end of the list
 
 inline void append(const torch::Tensor ¶m)
 
-push the a given parameter at the end of the list
+push a given parameter at the end of the list
 
 inline void append(const [OrderedDict](../library/registration.html#_CPPv4I00EN5torch11OrderedDictE)<std::string, torch::Tensor>::Item &pair)
 
-push the a given parameter at the end of the list And the key of the pair will be discarded, only the value will be added into the `ParameterList`
+push a given parameter at the end of the list And the key of the pair will be discarded, only the value will be added into the `ParameterList`
 
 template<typename Container>
 inline void extend(const Container &container)
@@ -9906,7 +9910,7 @@ using Impl = BilinearImpl
 
 class BilinearImpl : public torch::nn::[Cloneable](utilities.html#_CPPv4I0EN5torch2nn9CloneableE)<BilinearImpl>
 
-Applies a billinear transformation with optional bias.
+Applies a bilinear transformation with optional bias.
 
 See [https://pytorch.org/docs/main/generated/torch.nn.Bilinear.html](https://pytorch.org/docs/main/generated/torch.nn.Bilinear.html) to learn about the exact behavior of this module.
 
@@ -10052,14 +10056,11 @@ Example:
 
 ```
 Unflatten model(UnflattenOptions(0, {2, 2}));
-Unflatten model(UnflattenOptions("B", {{"B1", 2}, {"B2", 2}}));
 ```
 
 Public Functions
 
 inline UnflattenImpl(int64_t dim, std::vector<int64_t> sizes)
-
-inline UnflattenImpl(std::string dimname, UnflattenOptions::namedshape_t namedshape)
 
 explicit UnflattenImpl(UnflattenOptions options_)
 
@@ -10119,7 +10120,7 @@ using Impl = L1LossImpl
 
 struct L1LossImpl : public torch::nn::[Cloneable](utilities.html#_CPPv4I0EN5torch2nn9CloneableE)<L1LossImpl>
 
-Creates a criterion that measures the mean absolute error (MAE) between each element in the input : math :`x` and target : `y`.
+Creates a criterion that measures the mean absolute error (MAE) between each element in the input :math:`x` and target :math:`y`.
 
 See [https://pytorch.org/docs/main/nn.html#torch.nn.L1Loss](https://pytorch.org/docs/main/nn.html#torch.nn.L1Loss) to learn about the exact behavior of this module.
 
@@ -11289,7 +11290,7 @@ Pretty prints the `LayerNorm` module into the given `stream`.
 
 Applies layer normalization over a mini-batch of inputs as described in the paper `Layer Normalization`_ .
 
-The mean and standard-deviation are calculated separately over the last certain number dimensions which have to be of the shape specified by input `normalized_shape`.
+The mean and standard-deviation are calculated separately over the last certain number of dimensions which have to be of the shape specified by input `normalized_shape`.
 
 `Layer Normalization`: [https://arxiv.org/abs/1607.06450](https://arxiv.org/abs/1607.06450)
 
@@ -12602,7 +12603,7 @@ class TransformerEncoderImpl : public torch::nn::[Cloneable](utilities.html#_CPP
 
 TransformerEncoder module.
 
-See [https://pytorch.org/docs/main/generated/torch.nn.TransformerEncoder.html](https://pytorch.org/docs/main/generated/torch.nn.TransformerEncoder.html) to learn abouut the exact behavior of this encoder layer module.
+See [https://pytorch.org/docs/main/generated/torch.nn.TransformerEncoder.html](https://pytorch.org/docs/main/generated/torch.nn.TransformerEncoder.html) to learn about the exact behavior of this encoder layer module.
 
 See the documentation for `torch::nn::TransformerEncoder` class to learn what constructor arguments are supported for this encoder module.
 
@@ -12665,7 +12666,7 @@ class TransformerDecoderImpl : public torch::nn::[Cloneable](utilities.html#_CPP
 
 TransformerDecoder is a stack of N decoder layers.
 
-See [https://pytorch.org/docs/main/generated/torch.nn.TransformerDecoder.html](https://pytorch.org/docs/main/generated/torch.nn.TransformerDecoder.html) to learn abouut the exact behavior of this decoder module
+See [https://pytorch.org/docs/main/generated/torch.nn.TransformerDecoder.html](https://pytorch.org/docs/main/generated/torch.nn.TransformerDecoder.html) to learn about the exact behavior of this decoder module
 
 See the documentation for `torch::nn::TransformerDecoderOptions` class to learn what constructor arguments are supported for this decoder module
 
@@ -12724,7 +12725,7 @@ class TransformerEncoderLayerImpl : public torch::nn::[Cloneable](utilities.html
 
 TransformerEncoderLayer module.
 
-See [https://pytorch.org/docs/main/generated/torch.nn.TransformerEncoderLayer.html](https://pytorch.org/docs/main/generated/torch.nn.TransformerEncoderLayer.html) to learn abouut the exact behavior of this encoder layer model
+See [https://pytorch.org/docs/main/generated/torch.nn.TransformerEncoderLayer.html](https://pytorch.org/docs/main/generated/torch.nn.TransformerEncoderLayer.html) to learn about the exact behavior of this encoder layer model
 
 See the documentation for `torch::nn::TransformerEncoderLayer` class to learn what constructor arguments are supported for this encoder layer model
 
@@ -12777,15 +12778,15 @@ pre feedforward, normalization layer
 
 [LayerNorm](normalization.html#_CPPv4N5torch2nn9LayerNormE) norm2 = nullptr
 
-post feedfastward, normalization layer
+post feedforward, normalization layer
 
 [Dropout](dropout.html#_CPPv4N5torch2nn7DropoutE) dropout1 = nullptr
 
-pre feedfastward, dropout layer
+pre feedforward, dropout layer
 
 [Dropout](dropout.html#_CPPv4N5torch2nn7DropoutE) dropout2 = nullptr
 
-post feedfastward, dropout layer
+post feedforward, dropout layer
 
 Friends
 
@@ -15319,6 +15320,18 @@ Returns:
 
 true if the tensor is defined, false otherwise.
 
+inline bool has_storage() const
+
+Checks whether the tensor has an associated storage.
+
+Returns false for undefined tensors and for tensors that do not own a storage (e.g. sparse tensors).
+
+Minimum compatible version: PyTorch 2.14.
+
+Returns:
+
+true if the tensor has a storage, false otherwise.
+
 inline int64_t storage_offset() const
 
 Returns the storage offset of the tensor.
@@ -15720,6 +15733,40 @@ Returns:
 
 A view tensor with the specified shape.
 
+inline torch::stable::Tensor torch::stable::view(const torch::stable::Tensor &self, torch::headeronly::ScalarType dtype)
+
+Stable version of the view.dtype op.
+
+Returns a view of the input tensor with the same data reinterpreted as the given dtype. This is a different overload than the shape-based view op.
+
+Minimum compatible version: PyTorch 2.10. Build time minimum version: PyTorch 2.14.
+
+Parameters:
+
+- **self** - The input tensor.
+- **dtype** - The dtype to reinterpret the data as.
+
+Returns:
+
+A view of the input tensor with the specified dtype.
+
+inline torch::stable::Tensor torch::stable::permute(const torch::stable::Tensor &self, torch::headeronly::IntHeaderOnlyArrayRef dims)
+
+Stable version of the permute op.
+
+Returns a view of the input tensor with its dimensions rearranged according to dims. The returned tensor shares the same underlying data with the input.
+
+Minimum compatible version: PyTorch 2.10. Build time minimum version: PyTorch 2.14.
+
+Parameters:
+
+- **self** - The input tensor.
+- **dims** - The desired ordering of dimensions.
+
+Returns:
+
+A permuted view of the input tensor.
+
 inline torch::stable::Tensor torch::stable::flatten(const torch::stable::Tensor &self, int64_t start_dim = 0, int64_t end_dim = -1)
 
 Stable version of the flatten.using_ints op.
@@ -15812,6 +15859,24 @@ Returns:
 
 A tensor with one fewer dimension.
 
+inline torch::stable::Tensor torch::stable::index_select(const torch::stable::Tensor &self, int64_t dim, const torch::stable::Tensor &index)
+
+Stable version of the index_select op.
+
+Returns a new tensor which indexes the input tensor along dimension dim using the entries in index.
+
+Minimum compatible version: PyTorch 2.10. Build time minimum version: PyTorch 2.14.
+
+Parameters:
+
+- **self** - The input tensor.
+- **dim** - The dimension to index along.
+- **index** - A 1-D tensor of indices to select.
+
+Returns:
+
+A tensor with values selected along dim.
+
 inline torch::stable::Tensor torch::stable::narrow(torch::stable::Tensor &self, int64_t dim, int64_t start, int64_t length)
 
 Stable version of the narrow.default op.
@@ -15901,6 +15966,22 @@ Parameters:
 Returns:
 
 A tensor on the specified device.
+
+inline bool torch::stable::is_pinned(const torch::stable::Tensor &self)
+
+Stable version of the is_pinned op.
+
+Returns true if the tensor's storage is allocated in pinned memory.
+
+Minimum compatible version: PyTorch 2.10. Build time minimum version: PyTorch 2.14.
+
+Parameters:
+
+**self** - The input tensor.
+
+Returns:
+
+true if the tensor is pinned, false otherwise.
 
 ## In-place Operations
 
@@ -16078,6 +16159,91 @@ Parameters:
 Returns:
 
 The result of self - alpha * other.
+
+inline torch::stable::Tensor torch::stable::bitwise_and(const torch::stable::Tensor &self, const torch::stable::Tensor &other)
+
+Stable version of the bitwise_and.Tensor op.
+
+Computes the element-wise bitwise AND of self and other.
+
+Minimum compatible version: PyTorch 2.10. Build time minimum version: PyTorch 2.14.
+
+Parameters:
+
+- **self** - The first input tensor.
+- **other** - The second input tensor.
+
+Returns:
+
+The result of the bitwise AND.
+
+inline torch::stable::Tensor torch::stable::bitwise_or(const torch::stable::Tensor &self, const torch::stable::Tensor &other)
+
+Stable version of the bitwise_or.Tensor op.
+
+Computes the element-wise bitwise OR of self and other.
+
+Minimum compatible version: PyTorch 2.10. Build time minimum version: PyTorch 2.14.
+
+Parameters:
+
+- **self** - The first input tensor.
+- **other** - The second input tensor.
+
+Returns:
+
+The result of the bitwise OR.
+
+inline torch::stable::Tensor torch::stable::bitwise_left_shift(const torch::stable::Tensor &self, const torch::stable::Tensor &other)
+
+Stable version of the bitwise_left_shift.Tensor op.
+
+Computes the element-wise left bitwise shift of self by other.
+
+Minimum compatible version: PyTorch 2.10. Build time minimum version: PyTorch 2.14.
+
+Parameters:
+
+- **self** - The input tensor to shift.
+- **other** - The tensor of shift amounts.
+
+Returns:
+
+The result of the left bitwise shift.
+
+inline torch::stable::Tensor torch::stable::bitwise_right_shift(const torch::stable::Tensor &self, const torch::stable::Tensor &other)
+
+Stable version of the bitwise_right_shift.Tensor op.
+
+Computes the element-wise right bitwise shift of self by other.
+
+Minimum compatible version: PyTorch 2.10. Build time minimum version: PyTorch 2.14.
+
+Parameters:
+
+- **self** - The input tensor to shift.
+- **other** - The tensor of shift amounts.
+
+Returns:
+
+The result of the right bitwise shift.
+
+inline torch::stable::Tensor torch::stable::floor_divide(const torch::stable::Tensor &self, const torch::stable::Tensor &other)
+
+Stable version of the floor_divide op.
+
+Computes the element-wise floor division of self by other.
+
+Minimum compatible version: PyTorch 2.10. Build time minimum version: PyTorch 2.14.
+
+Parameters:
+
+- **self** - The dividend tensor.
+- **other** - The divisor tensor.
+
+Returns:
+
+The result of floor division.
 
 ---
 
@@ -16266,20 +16432,34 @@ inline explicit Stream(StreamHandle stream)
 
 inline StreamId id() const
 
-## Stream Utilities
+inline void *nativeHandle() const
 
-For CUDA stream access, we currently recommend the ABI stable C shim API. This
-will be improved in a future release with a more ergonomic wrapper.
+## Stream Utilities
 
 ### Getting the Current CUDA Stream
 
 To obtain the current `cudaStream_t` for use in CUDA kernels:
 
+PyTorch version 2.13+
+
+```
+#include <torch/csrc/stable/accelerator.h>
+
+// nativeHandle() requires PyTorch 2.13+
+cudaStream_t stream = static_cast<cudaStream_t>(
+ torch::stable::accelerator::getCurrentStream(tensor.get_device_index()).nativeHandle());
+
+// Now you can use 'stream' in your CUDA kernel launches
+my_kernel<<<blocks, threads, 0, stream>>>(args...);
+```
+
+PyTorch version 2.9-2.12
+
 ```
 #include <torch/csrc/inductor/aoti_torch/c/shim.h>
 #include <torch/headeronly/util/shim_utils.h>
 
-// For now, we rely on the ABI stable C shim API to get the current CUDA stream.
+// Use the ABI-stable C shim API to get the current CUDA stream.
 void* stream_ptr = nullptr;
 TORCH_ERROR_CODE_CHECK(
  aoti_torch_get_current_cuda_stream(tensor.get_device_index(), &stream_ptr));
@@ -16291,8 +16471,7 @@ my_kernel<<<blocks, threads, 0, stream>>>(args...);
 
 Note
 
-The `TORCH_ERROR_CODE_CHECK` macro is required when using C shim APIs
-to properly check error codes and throw appropriate exceptions.
+When using C shim APIs, the `TORCH_ERROR_CODE_CHECK` macro is required to properly check error codes and throw appropriate exceptions. `nativeHandle()`, along with all our highlevel C++ utility APIs, does this check for you.
 
 ## CUDA Error Checking Macros
 
@@ -17236,9 +17415,9 @@ detailed description of the C++ frontend. Relevant sections of the `torch::`
 namespace related to the C++ Frontend include [torch::nn](https://pytorch.org/cppdocs/api/namespace_torch__nn.html#namespace-torch-nn),
 [torch::optim](https://pytorch.org/cppdocs/api/namespace_torch__optim.html#namespace-torch-optim),
 [torch::data](https://pytorch.org/cppdocs/api/namespace_torch__data.html#namespace-torch-data),
-[torch::serialize](https://pytorch.org/cppdocs/api/namespace_torch__serialize.html#namespace-torch-serialize),
+[torch::serialize](https://docs.pytorch.org/cppdocs/api/serialize/index.html),
 [torch::jit](https://pytorch.org/cppdocs/api/namespace_torch__jit.html#namespace-torch-jit)
-and [torch::python](https://pytorch.org/cppdocs/api/namespace_torch__python.html#namespace-torch-python).
+and `torch::python`.
 Examples of the C++ frontend can be found in [this repository](https://github.com/pytorch/examples/tree/master/cpp) which is being
 expanded on a continuous and active basis.
 
@@ -17268,7 +17447,7 @@ for production environments and no-Python inference. You can find out more
 about this by following [this](https://pytorch.org/tutorials/advanced/cpp_export.html) link. The second
 API concerns itself with scenarios in which you would like to extend
 TorchScript with custom operators, which can similarly be serialized and
-invoked from C++ during inference. Lastly, the [torch::jit::compile](https://pytorch.org/cppdocs/api/function_namespacetorch_1_1jit_1a8660dc13a6b82336aadac667e6dccba1.html)
+invoked from C++ during inference. Lastly, the `torch::jit::compile`
 function may be used to access the TorchScript compiler directly from C++.
 
 ## C++ Extensions

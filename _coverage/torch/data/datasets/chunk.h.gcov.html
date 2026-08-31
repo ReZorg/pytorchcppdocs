@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2026-04-28 01:10:32</td>
+            <td class="headerValue">2026-08-30 01:11:36</td>
             <td></td>
           </tr>
           <tr>
@@ -365,14 +365,14 @@
 <a name="299"><span class="lineNum">     299 </span>            : };</a>
 <a name="300"><span class="lineNum">     300 </span>            : </a>
 <a name="301"><span class="lineNum">     301 </span>            : /// A stateful dataset that support hierarchical sampling and prefetching of</a>
-<a name="302"><span class="lineNum">     302 </span>            : /// entre chunks.</a>
+<a name="302"><span class="lineNum">     302 </span>            : /// entire chunks.</a>
 <a name="303"><span class="lineNum">     303 </span>            : ///</a>
 <a name="304"><span class="lineNum">     304 </span>            : /// Unlike regular dataset, chunk dataset require two samplers to operate and</a>
 <a name="305"><span class="lineNum">     305 </span>            : /// keeps an internal state. `ChunkSampler` selects, which chunk to load next,</a>
 <a name="306"><span class="lineNum">     306 </span>            : /// while the `ExampleSampler` determines the order of Examples that are</a>
 <a name="307"><span class="lineNum">     307 </span>            : /// returned in each `get_batch` call. The hierarchical sampling approach used</a>
 <a name="308"><span class="lineNum">     308 </span>            : /// here is inspired by this paper</a>
-<a name="309"><span class="lineNum">     309 </span>            : /// http://martin.zinkevich.org/publications/nips2010.pdf</a>
+<a name="309"><span class="lineNum">     309 </span>            : /// https://proceedings.neurips.cc/paper_files/paper/2010/file/abea47ba24142ed16b7d8fbf2c740e0d-Paper.pdf</a>
 <a name="310"><span class="lineNum">     310 </span>            : template &lt;</a>
 <a name="311"><span class="lineNum">     311 </span>            :     typename ChunkReader,</a>
 <a name="312"><span class="lineNum">     312 </span>            :     typename ChunkSampler = samplers::RandomSampler,</a>

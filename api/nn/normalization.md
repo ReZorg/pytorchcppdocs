@@ -221,7 +221,7 @@ Pretty prints the `LayerNorm` module into the given `stream`.
 
 Applies layer normalization over a mini-batch of inputs as described in the paper `Layer Normalization`_ .
 
-The mean and standard-deviation are calculated separately over the last certain number dimensions which have to be of the shape specified by input `normalized_shape`.
+The mean and standard-deviation are calculated separately over the last certain number of dimensions which have to be of the shape specified by input `normalized_shape`.
 
 `Layer Normalization`: [https://arxiv.org/abs/1607.06450](https://arxiv.org/abs/1607.06450)
 

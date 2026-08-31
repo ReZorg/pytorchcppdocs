@@ -34,7 +34,7 @@ using Impl = L1LossImpl
 
 struct L1LossImpl : public torch::nn::[Cloneable](utilities.html#_CPPv4I0EN5torch2nn9CloneableE)<L1LossImpl>
 
-Creates a criterion that measures the mean absolute error (MAE) between each element in the input : math :`x` and target : `y`.
+Creates a criterion that measures the mean absolute error (MAE) between each element in the input :math:`x` and target :math:`y`.
 
 See [https://pytorch.org/docs/main/nn.html#torch.nn.L1Loss](https://pytorch.org/docs/main/nn.html#torch.nn.L1Loss) to learn about the exact behavior of this module.
 

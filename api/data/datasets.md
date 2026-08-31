@@ -81,7 +81,7 @@ A stateful dataset is a dataset that maintains some internal state, which will b
 
 Subclasses can override the `reset()` method to configure this behavior. Further, the return type of a stateful dataset's `get_batch()` method is always an `optional`. When the stateful dataset wants to indicate to the dataloader that its epoch has ended, it should return an empty optional. The dataloader knows to modify its implementation based on whether the dataset is stateless or stateful.
 
-Note that when subclassing a from `StatefulDataset<Self, T>`, the return type of `get_batch()`, which the subclass must override, will be `optional<T>` (i.e. the type specified in the `StatefulDataset` specialization is automatically boxed into an `optional` for the dataset's `BatchType`).
+Note that when subclassing from `StatefulDataset<Self, T>`, the return type of `get_batch()`, which the subclass must override, will be `optional<T>` (i.e. the type specified in the `StatefulDataset` specialization is automatically boxed into an `optional` for the dataset's `BatchType`).
 
 Public Functions
 
@@ -201,9 +201,9 @@ Returns the transform being applied.
 template<typename ChunkReader, typename ChunkSampler = samplers::[RandomSampler](samplers.html#_CPPv4N5torch4data8samplers13RandomSamplerE), typename ExampleSampler = samplers::[RandomSampler](samplers.html#_CPPv4N5torch4data8samplers13RandomSamplerE)>
 class ChunkDataset : public torch::data::datasets::StatefulDataset<ChunkDataset<ChunkReader, samplers::[RandomSampler](samplers.html#_CPPv4N5torch4data8samplers13RandomSamplerE), samplers::[RandomSampler](samplers.html#_CPPv4N5torch4data8samplers13RandomSamplerE)>, ChunkReader::BatchType, size_t>
 
-A stateful dataset that support hierarchical sampling and prefetching of entre chunks.
+A stateful dataset that support hierarchical sampling and prefetching of entire chunks.
 
-Unlike regular dataset, chunk dataset require two samplers to operate and keeps an internal state. `ChunkSampler` selects, which chunk to load next, while the `ExampleSampler` determines the order of Examples that are returned in each `get_batch` call. The hierarchical sampling approach used here is inspired by this paper [http://martin.zinkevich.org/publications/nips2010.pdf](http://martin.zinkevich.org/publications/nips2010.pdf)
+Unlike regular dataset, chunk dataset require two samplers to operate and keeps an internal state. `ChunkSampler` selects, which chunk to load next, while the `ExampleSampler` determines the order of Examples that are returned in each `get_batch` call. The hierarchical sampling approach used here is inspired by this paper [https://proceedings.neurips.cc/paper_files/paper/2010/file/abea47ba24142ed16b7d8fbf2c740e0d-Paper.pdf](https://proceedings.neurips.cc/paper_files/paper/2010/file/abea47ba24142ed16b7d8fbf2c740e0d-Paper.pdf)
 
 Public Types
 

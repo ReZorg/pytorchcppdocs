@@ -92,7 +92,7 @@ using Impl = BilinearImpl
 
 class BilinearImpl : public torch::nn::[Cloneable](utilities.html#_CPPv4I0EN5torch2nn9CloneableE)<BilinearImpl>
 
-Applies a billinear transformation with optional bias.
+Applies a bilinear transformation with optional bias.
 
 See [https://pytorch.org/docs/main/generated/torch.nn.Bilinear.html](https://pytorch.org/docs/main/generated/torch.nn.Bilinear.html) to learn about the exact behavior of this module.
 
@@ -238,14 +238,11 @@ Example:
 
 ```
 Unflatten model(UnflattenOptions(0, {2, 2}));
-Unflatten model(UnflattenOptions("B", {{"B1", 2}, {"B2", 2}}));
 ```
 
 Public Functions
 
 inline UnflattenImpl(int64_t dim, std::vector<int64_t> sizes)
-
-inline UnflattenImpl(std::string dimname, UnflattenOptions::namedshape_t namedshape)
 
 explicit UnflattenImpl(UnflattenOptions options_)
 

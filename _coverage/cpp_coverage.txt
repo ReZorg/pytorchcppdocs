@@ -59,6 +59,7 @@ torch (core)
    * torch::randperm_symint  (function)
    * torch::range  (function)
    * torch::scalar_tensor  (function)
+   * torch::set_printoption_sci_mode  (function)
    * torch::sparse_bsc_tensor  (function)
    * torch::sparse_bsr_tensor  (function)
    * torch::sparse_compressed_tensor  (function)
@@ -373,10 +374,10 @@ torch::special
 Summary
 ==================================================
 
-Total APIs discovered:   800
-Documented:              475
-Missing:                 325
-Coverage:                59.4%
+Total APIs discovered:   809
+Documented:              483
+Missing:                 326
+Coverage:                59.7%
 
 Category                                       Covered  Total       %
 ----------------------------------------------------------------------
@@ -385,7 +386,7 @@ at::cuda                                             7     11   63.6%
 c10                                                 10     12   83.3%
 c10::cuda                                            9      9  100.0%
 c10::xpu                                             4      4  100.0%
-torch (core)                                         4     61    6.6%
+torch (core)                                         4     62    6.5%
 torch (device)                                       6     16   37.5%
 torch (macros)                                       3      5   60.0%
 torch::autograd                                      3      4   75.0%
@@ -398,4 +399,4 @@ torch::nn::utils                                     1     10   10.0%
 torch::optim                                        13     25   52.0%
 torch::serialize                                     4      4  100.0%
 torch::special                                       0     56    0.0%
-torch::stable                                       33     33  100.0%
+torch::stable                                       41     41  100.0%
