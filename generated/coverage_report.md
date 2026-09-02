@@ -1,0 +1,188 @@
+# Header coverage report
+
+- Documented headers in `_coverage/`: **166**
+- Generated stub headers: **169**
+- Documented headers mirrored by a stub: **166**
+- Documented headers without a stub: **0**
+- Stub-only headers (e.g. .hpp templates): **3**
+
+Representative stubs cover the headers exercised by the doc-page
+examples; the remainder are recorded below for traceability.
+
+## Mirrored headers
+
+- `ATen/DeviceGuard.h`
+- `ATen/core/Tensor.h`
+- `ATen/core/ivalue.h`
+- `ATen/cuda/CUDAContextLight.h`
+- `ATen/cudnn/Descriptors.h`
+- `ATen/cudnn/Types.h`
+- `ATen/cudnn/Utils.h`
+- `ATen/mkl/Descriptors.h`
+- `ATen/native/TensorShape.h`
+- `c10/core/Device.h`
+- `c10/core/DeviceGuard.h`
+- `c10/core/DeviceType.h`
+- `c10/core/Stream.h`
+- `c10/cuda/CUDAGuard.h`
+- `c10/cuda/CUDAStream.h`
+- `c10/util/ArrayRef.h`
+- `c10/util/Exception.h`
+- `c10/util/Optional.h`
+- `c10/util/OptionalArrayRef.h`
+- `c10/xpu/XPUStream.h`
+- `torch/csrc/autograd/autograd.h`
+- `torch/csrc/autograd/custom_function.h`
+- `torch/csrc/autograd/function.h`
+- `torch/csrc/autograd/generated/variable_factories.h`
+- `torch/csrc/jit/api/module.h`
+- `torch/csrc/jit/runtime/custom_operator.h`
+- `torch/csrc/jit/serialization/import.h`
+- `torch/csrc/stable/accelerator.h`
+- `torch/csrc/stable/device_struct.h`
+- `torch/csrc/stable/macros.h`
+- `torch/csrc/stable/ops.h`
+- `torch/csrc/stable/tensor_struct.h`
+- `torch/cuda.h`
+- `torch/custom_class.h`
+- `torch/data/dataloader.h`
+- `torch/data/dataloader/base.h`
+- `torch/data/dataloader/stateful.h`
+- `torch/data/dataloader/stateless.h`
+- `torch/data/dataloader_options.h`
+- `torch/data/datasets/base.h`
+- `torch/data/datasets/chunk.h`
+- `torch/data/datasets/map.h`
+- `torch/data/datasets/mnist.h`
+- `torch/data/datasets/shared.h`
+- `torch/data/datasets/stateful.h`
+- `torch/data/datasets/tensor.h`
+- `torch/data/example.h`
+- `torch/data/iterator.h`
+- `torch/data/samplers/base.h`
+- `torch/data/samplers/custom_batch_request.h`
+- `torch/data/samplers/distributed.h`
+- `torch/data/samplers/random.h`
+- `torch/data/samplers/sequential.h`
+- `torch/data/samplers/serialize.h`
+- `torch/data/samplers/stream.h`
+- `torch/data/transforms/base.h`
+- `torch/data/transforms/lambda.h`
+- `torch/data/transforms/stack.h`
+- `torch/data/transforms/tensor.h`
+- `torch/data/worker_exception.h`
+- `torch/enum.h`
+- `torch/expanding_array.h`
+- `torch/fft.h`
+- `torch/imethod.h`
+- `torch/jit.h`
+- `torch/library.h`
+- `torch/mps.h`
+- `torch/nn/cloneable.h`
+- `torch/nn/functional/activation.h`
+- `torch/nn/functional/batchnorm.h`
+- `torch/nn/functional/conv.h`
+- `torch/nn/functional/distance.h`
+- `torch/nn/functional/dropout.h`
+- `torch/nn/functional/embedding.h`
+- `torch/nn/functional/fold.h`
+- `torch/nn/functional/instancenorm.h`
+- `torch/nn/functional/linear.h`
+- `torch/nn/functional/loss.h`
+- `torch/nn/functional/normalization.h`
+- `torch/nn/functional/padding.h`
+- `torch/nn/functional/pixelshuffle.h`
+- `torch/nn/functional/pooling.h`
+- `torch/nn/functional/upsampling.h`
+- `torch/nn/functional/vision.h`
+- `torch/nn/init.h`
+- `torch/nn/module.h`
+- `torch/nn/modules/_functions.h`
+- `torch/nn/modules/activation.h`
+- `torch/nn/modules/adaptive.h`
+- `torch/nn/modules/batchnorm.h`
+- `torch/nn/modules/container/any.h`
+- `torch/nn/modules/container/any_module_holder.h`
+- `torch/nn/modules/container/any_value.h`
+- `torch/nn/modules/container/functional.h`
+- `torch/nn/modules/container/moduledict.h`
+- `torch/nn/modules/container/modulelist.h`
+- `torch/nn/modules/container/named_any.h`
+- `torch/nn/modules/container/parameterdict.h`
+- `torch/nn/modules/container/parameterlist.h`
+- `torch/nn/modules/container/sequential.h`
+- `torch/nn/modules/conv.h`
+- `torch/nn/modules/distance.h`
+- `torch/nn/modules/dropout.h`
+- `torch/nn/modules/embedding.h`
+- `torch/nn/modules/fold.h`
+- `torch/nn/modules/instancenorm.h`
+- `torch/nn/modules/linear.h`
+- `torch/nn/modules/loss.h`
+- `torch/nn/modules/normalization.h`
+- `torch/nn/modules/padding.h`
+- `torch/nn/modules/pixelshuffle.h`
+- `torch/nn/modules/pooling.h`
+- `torch/nn/modules/rnn.h`
+- `torch/nn/modules/transformer.h`
+- `torch/nn/modules/transformercoder.h`
+- `torch/nn/modules/transformerlayer.h`
+- `torch/nn/modules/upsampling.h`
+- `torch/nn/modules/utils.h`
+- `torch/nn/options/activation.h`
+- `torch/nn/options/adaptive.h`
+- `torch/nn/options/batchnorm.h`
+- `torch/nn/options/conv.h`
+- `torch/nn/options/distance.h`
+- `torch/nn/options/dropout.h`
+- `torch/nn/options/embedding.h`
+- `torch/nn/options/fold.h`
+- `torch/nn/options/instancenorm.h`
+- `torch/nn/options/linear.h`
+- `torch/nn/options/loss.h`
+- `torch/nn/options/normalization.h`
+- `torch/nn/options/padding.h`
+- `torch/nn/options/pixelshuffle.h`
+- `torch/nn/options/pooling.h`
+- `torch/nn/options/rnn.h`
+- `torch/nn/options/transformer.h`
+- `torch/nn/options/transformercoder.h`
+- `torch/nn/options/transformerlayer.h`
+- `torch/nn/options/upsampling.h`
+- `torch/nn/options/vision.h`
+- `torch/nn/parallel/data_parallel.h`
+- `torch/nn/pimpl.h`
+- `torch/nn/utils/clip_grad.h`
+- `torch/nn/utils/convert_parameters.h`
+- `torch/nn/utils/rnn.h`
+- `torch/optim/adagrad.h`
+- `torch/optim/adam.h`
+- `torch/optim/adamw.h`
+- `torch/optim/lbfgs.h`
+- `torch/optim/optimizer.h`
+- `torch/optim/rmsprop.h`
+- `torch/optim/schedulers/lr_scheduler.h`
+- `torch/optim/schedulers/reduce_on_plateau_scheduler.h`
+- `torch/optim/schedulers/step_lr.h`
+- `torch/optim/serialize.h`
+- `torch/optim/sgd.h`
+- `torch/ordered_dict.h`
+- `torch/print.h`
+- `torch/python.h`
+- `torch/python/init.h`
+- `torch/serialize.h`
+- `torch/serialize/input-archive.h`
+- `torch/serialize/output-archive.h`
+- `torch/serialize/tensor.h`
+- `torch/special.h`
+- `torch/utils.h`
+- `torch/xpu.h`
+
+## Documented headers without a stub
+
+
+## Stub-only headers
+
+- `torch/data/dataset.hpp`
+- `torch/nn/module.hpp`
+- `torch/ordered_dict.hpp`
