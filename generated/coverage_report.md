@@ -1,0 +1,188 @@
+# Header coverage report
+
+- Documented headers in `_coverage/`: **166**
+- Generated stub headers: **63**
+- Documented headers mirrored by a stub: **60**
+- Documented headers without a stub: **106**
+- Stub-only headers (e.g. .hpp templates): **3**
+
+Representative stubs cover the headers exercised by the doc-page
+examples; the remainder are recorded below for traceability.
+
+## Mirrored headers
+
+- `aten/src/ATen/DeviceGuard.h`
+- `aten/src/ATen/core/Tensor.h`
+- `aten/src/ATen/core/ivalue.h`
+- `aten/src/ATen/cuda/CUDAContextLight.h`
+- `aten/src/ATen/cudnn/Descriptors.h`
+- `aten/src/ATen/cudnn/Types.h`
+- `aten/src/ATen/cudnn/Utils.h`
+- `aten/src/ATen/mkl/Descriptors.h`
+- `aten/src/ATen/native/TensorShape.h`
+- `c10/core/Device.h`
+- `c10/core/DeviceGuard.h`
+- `c10/core/DeviceType.h`
+- `c10/core/Stream.h`
+- `c10/cuda/CUDAGuard.h`
+- `c10/cuda/CUDAStream.h`
+- `c10/util/ArrayRef.h`
+- `c10/util/Exception.h`
+- `c10/util/Optional.h`
+- `c10/util/OptionalArrayRef.h`
+- `c10/xpu/XPUStream.h`
+- `cuda.h`
+- `data/dataloader.h`
+- `data/dataloader/base.h`
+- `data/dataloader/stateful.h`
+- `data/dataloader/stateless.h`
+- `data/dataloader_options.h`
+- `data/datasets/base.h`
+- `data/datasets/chunk.h`
+- `data/datasets/map.h`
+- `data/datasets/mnist.h`
+- `data/datasets/shared.h`
+- `data/datasets/stateful.h`
+- `data/datasets/tensor.h`
+- `data/example.h`
+- `data/iterator.h`
+- `data/samplers/base.h`
+- `data/samplers/custom_batch_request.h`
+- `data/samplers/distributed.h`
+- `data/samplers/random.h`
+- `data/samplers/sequential.h`
+- `data/samplers/serialize.h`
+- `data/samplers/stream.h`
+- `data/transforms/base.h`
+- `data/transforms/lambda.h`
+- `data/transforms/stack.h`
+- `data/transforms/tensor.h`
+- `data/worker_exception.h`
+- `enum.h`
+- `expanding_array.h`
+- `fft.h`
+- `imethod.h`
+- `jit.h`
+- `mps.h`
+- `nn/cloneable.h`
+- `nn/functional/activation.h`
+- `nn/functional/batchnorm.h`
+- `nn/functional/conv.h`
+- `nn/functional/distance.h`
+- `nn/functional/dropout.h`
+- `nn/functional/embedding.h`
+
+## Documented headers without a stub
+
+- `nn/functional/fold.h`
+- `nn/functional/instancenorm.h`
+- `nn/functional/linear.h`
+- `nn/functional/loss.h`
+- `nn/functional/normalization.h`
+- `nn/functional/padding.h`
+- `nn/functional/pixelshuffle.h`
+- `nn/functional/pooling.h`
+- `nn/functional/upsampling.h`
+- `nn/functional/vision.h`
+- `nn/init.h`
+- `nn/module.h`
+- `nn/modules/_functions.h`
+- `nn/modules/activation.h`
+- `nn/modules/adaptive.h`
+- `nn/modules/batchnorm.h`
+- `nn/modules/container/any.h`
+- `nn/modules/container/any_module_holder.h`
+- `nn/modules/container/any_value.h`
+- `nn/modules/container/functional.h`
+- `nn/modules/container/moduledict.h`
+- `nn/modules/container/modulelist.h`
+- `nn/modules/container/named_any.h`
+- `nn/modules/container/parameterdict.h`
+- `nn/modules/container/parameterlist.h`
+- `nn/modules/container/sequential.h`
+- `nn/modules/conv.h`
+- `nn/modules/distance.h`
+- `nn/modules/dropout.h`
+- `nn/modules/embedding.h`
+- `nn/modules/fold.h`
+- `nn/modules/instancenorm.h`
+- `nn/modules/linear.h`
+- `nn/modules/loss.h`
+- `nn/modules/normalization.h`
+- `nn/modules/padding.h`
+- `nn/modules/pixelshuffle.h`
+- `nn/modules/pooling.h`
+- `nn/modules/rnn.h`
+- `nn/modules/transformer.h`
+- `nn/modules/transformercoder.h`
+- `nn/modules/transformerlayer.h`
+- `nn/modules/upsampling.h`
+- `nn/modules/utils.h`
+- `nn/options/activation.h`
+- `nn/options/adaptive.h`
+- `nn/options/batchnorm.h`
+- `nn/options/conv.h`
+- `nn/options/distance.h`
+- `nn/options/dropout.h`
+- `nn/options/embedding.h`
+- `nn/options/fold.h`
+- `nn/options/instancenorm.h`
+- `nn/options/linear.h`
+- `nn/options/loss.h`
+- `nn/options/normalization.h`
+- `nn/options/padding.h`
+- `nn/options/pixelshuffle.h`
+- `nn/options/pooling.h`
+- `nn/options/rnn.h`
+- `nn/options/transformer.h`
+- `nn/options/transformercoder.h`
+- `nn/options/transformerlayer.h`
+- `nn/options/upsampling.h`
+- `nn/options/vision.h`
+- `nn/parallel/data_parallel.h`
+- `nn/pimpl.h`
+- `nn/utils/clip_grad.h`
+- `nn/utils/convert_parameters.h`
+- `nn/utils/rnn.h`
+- `optim/adagrad.h`
+- `optim/adam.h`
+- `optim/adamw.h`
+- `optim/lbfgs.h`
+- `optim/optimizer.h`
+- `optim/rmsprop.h`
+- `optim/schedulers/lr_scheduler.h`
+- `optim/schedulers/reduce_on_plateau_scheduler.h`
+- `optim/schedulers/step_lr.h`
+- `optim/serialize.h`
+- `optim/sgd.h`
+- `ordered_dict.h`
+- `print.h`
+- `python.h`
+- `python/init.h`
+- `serialize.h`
+- `serialize/input-archive.h`
+- `serialize/output-archive.h`
+- `serialize/tensor.h`
+- `special.h`
+- `torch/csrc/autograd/autograd.h`
+- `torch/csrc/autograd/custom_function.h`
+- `torch/csrc/autograd/function.h`
+- `torch/csrc/autograd/generated/variable_factories.h`
+- `torch/csrc/jit/api/module.h`
+- `torch/csrc/jit/runtime/custom_operator.h`
+- `torch/csrc/jit/serialization/import.h`
+- `torch/csrc/stable/accelerator.h`
+- `torch/csrc/stable/device_struct.h`
+- `torch/csrc/stable/macros.h`
+- `torch/csrc/stable/ops.h`
+- `torch/csrc/stable/tensor_struct.h`
+- `torch/custom_class.h`
+- `torch/library.h`
+- `utils.h`
+- `xpu.h`
+
+## Stub-only headers
+
+- `torch/data/dataset.hpp`
+- `torch/nn/module.hpp`
+- `torch/ordered_dict.hpp`
