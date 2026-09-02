@@ -18,8 +18,13 @@ check_language(CUDA)
 file(GLOB GENERATED_SOURCES CONFIGURE_DEPENDS
      "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 add_library(generated_stubs STATIC ${GENERATED_SOURCES})
-target_include_directories(generated_stubs PUBLIC
-                           "${CMAKE_CURRENT_SOURCE_DIR}/include")
+# The stub headers mirror real LibTorch paths, so they may only be on
+# the include path in skeleton mode; with LibTorch they would shadow
+# the real headers and break the build.
+if(NOT Torch_FOUND)
+  target_include_directories(generated_stubs PUBLIC
+                             "${CMAKE_CURRENT_SOURCE_DIR}/include")
+endif()
 if(Torch_FOUND)
   target_link_libraries(generated_stubs PUBLIC "${TORCH_LIBRARIES}")
 endif()
