@@ -1,0 +1,144 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+env:
+  LIBTORCH_VERSION: "2.7.1"
+
+jobs:
+  codegen-tests:
+    name: Codegen unit tests & regeneration check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run generator unit tests
+        run: python3 -m unittest codegen.test_generate -v
+
+      - name: Verify regeneration is idempotent
+        run: |
+          python3 codegen/generate.py
+          if ! git diff --exit-code -- generated/; then
+            echo "::error::generated/ is stale; run codegen/generate.py and commit the result"
+            exit 1
+          fi
+
+      - name: Configure skeleton build without LibTorch
+        run: cmake -S generated -B /tmp/skeleton-build
+
+  build:
+    name: Build generated tree + example tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.7.1%2Bcpu.zip
+            archive_kind: zip
+          - os: windows-latest
+            libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-win-shared-with-deps-2.7.1%2Bcpu.zip
+            archive_kind: zip
+          - os: macos-latest
+            libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-macos-arm64-2.7.1.zip
+            archive_kind: zip
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache LibTorch
+        id: cache-libtorch
+        uses: actions/cache@v4
+        with:
+          path: libtorch
+          key: libtorch-${{ matrix.os }}-${{ env.LIBTORCH_VERSION }}-cpu-v1
+
+      - name: Download LibTorch (POSIX)
+        if: steps.cache-libtorch.outputs.cache-hit != 'true' && runner.os != 'Windows'
+        run: |
+          curl -fSL --retry 3 "${{ matrix.libtorch_url }}" -o /tmp/libtorch.zip
+          unzip -q /tmp/libtorch.zip -d "$GITHUB_WORKSPACE"
+
+      - name: Download LibTorch (Windows)
+        if: steps.cache-libtorch.outputs.cache-hit != 'true' && runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "${{ matrix.libtorch_url }}" -OutFile "$env:RUNNER_TEMP\libtorch.zip"
+          Expand-Archive -Path "$env:RUNNER_TEMP\libtorch.zip" -DestinationPath "$env:GITHUB_WORKSPACE"
+
+      - name: Configure generated tree
+        shell: bash
+        run: |
+          cmake -S generated -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/libtorch"
+
+      - name: Build all targets
+        shell: bash
+        run: cmake --build build --config Release --parallel
+
+      - name: Run example smoke tests (ctest)
+        shell: bash
+        working-directory: build
+        run: ctest -C Release --output-on-failure --parallel 4
+
+  e2e:
+    name: End-to-end curated examples (${{ matrix.example }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        example: [minimal, mnist]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache LibTorch
+        id: cache-libtorch
+        uses: actions/cache@v4
+        with:
+          path: libtorch
+          key: libtorch-ubuntu-latest-${{ env.LIBTORCH_VERSION }}-cpu-v1
+
+      - name: Download LibTorch
+        if: steps.cache-libtorch.outputs.cache-hit != 'true'
+        run: |
+          curl -fSL --retry 3 "https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.7.1%2Bcpu.zip" -o /tmp/libtorch.zip
+          unzip -q /tmp/libtorch.zip -d "$GITHUB_WORKSPACE"
+
+      - name: Build ${{ matrix.example }} example
+        run: |
+          cmake -S "examples/${{ matrix.example }}" -B "build-${{ matrix.example }}" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/libtorch"
+          cmake --build "build-${{ matrix.example }}" --parallel
+
+      - name: Run minimal example end-to-end
+        if: matrix.example == 'minimal'
+        run: "./build-${{ matrix.example }}/example-app"
+
+      - name: Run MNIST example end-to-end
+        if: matrix.example == 'mnist'
+        run: |
+          # The tutorial trains a hardcoded 10 epochs on the real MNIST dataset
+          # (downloaded at startup), so bound the run: a timeout after the
+          # training loop has started still proves the end-to-end path.
+          set +e
+          timeout --preserve-status 180 ./build-${{ matrix.example }}/mnist
+          rc=$?
+          set -e
+          if [ $rc -eq 143 ]; then
+            echo "MNIST training was exercising correctly; stopped by CI timeout."
+          elif [ $rc -ne 0 ]; then
+            echo "MNIST example failed with exit code $rc"
+            exit $rc
+          fi

@@ -1,0 +1,160 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions: {}
+
+env:
+  LIBTORCH_VERSION: "2.7.1"
+
+jobs:
+  codegen-check:
+    name: Codegen unit tests & regeneration check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run generator unit tests
+        run: python3 -m unittest codegen.test_generate -v
+
+      - name: Verify regeneration is idempotent
+        run: |
+          python3 codegen/generate.py
+          if ! git diff --exit-code -- generated/; then
+            echo "::error::generated/ is stale; run codegen/generate.py and commit the result"
+            exit 1
+          fi
+
+  package-source:
+    name: Package generated source tree
+    runs-on: ubuntu-latest
+    needs: codegen-check
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create source archive
+        run: |
+          tar -czf pytorchcppdocs-generated-src.tar.gz \
+            --transform 's,^generated,pytorchcppdocs-generated,' generated/
+          sha256sum pytorchcppdocs-generated-src.tar.gz > pytorchcppdocs-generated-src.tar.gz.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: source-archive
+          path: |
+            pytorchcppdocs-generated-src.tar.gz
+            pytorchcppdocs-generated-src.tar.gz.sha256
+          if-no-files-found: error
+
+  build-release:
+    name: Build release binaries (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    needs: codegen-check
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.7.1%2Bcpu.zip
+            artifact_name: pytorchcppdocs-generated-linux-x64-cpu
+          - os: windows-latest
+            libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-win-shared-with-deps-2.7.1%2Bcpu.zip
+            artifact_name: pytorchcppdocs-generated-windows-x64-cpu
+          - os: macos-latest
+            libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-macos-arm64-2.7.1.zip
+            artifact_name: pytorchcppdocs-generated-macos-arm64-cpu
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache LibTorch
+        id: cache-libtorch
+        uses: actions/cache@v4
+        with:
+          path: libtorch
+          key: libtorch-${{ matrix.os }}-${{ env.LIBTORCH_VERSION }}-cpu-v1
+
+      - name: Download LibTorch (POSIX)
+        if: steps.cache-libtorch.outputs.cache-hit != 'true' && runner.os != 'Windows'
+        run: |
+          curl -fSL --retry 3 "${{ matrix.libtorch_url }}" -o /tmp/libtorch.zip
+          unzip -q /tmp/libtorch.zip -d "$GITHUB_WORKSPACE"
+
+      - name: Download LibTorch (Windows)
+        if: steps.cache-libtorch.outputs.cache-hit != 'true' && runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "${{ matrix.libtorch_url }}" -OutFile "$env:RUNNER_TEMP\libtorch.zip"
+          Expand-Archive -Path "$env:RUNNER_TEMP\libtorch.zip" -DestinationPath "$env:GITHUB_WORKSPACE"
+
+      - name: Configure, build, and test
+        shell: bash
+        run: |
+          cmake -S generated -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/libtorch"
+          cmake --build build --config Release --parallel
+          ctest --test-dir build -C Release --output-on-failure --parallel 4
+
+      - name: Package binaries (POSIX)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          mkdir -p dist
+          find build -maxdepth 1 -type f -name 'example_*' -executable -exec cp {} dist/ \;
+          cp build/libgenerated_stubs.a dist/ 2>/dev/null || true
+          tar -czf "${{ matrix.artifact_name }}.tar.gz" -C dist .
+          sha256sum "${{ matrix.artifact_name }}.tar.gz" > "${{ matrix.artifact_name }}.tar.gz.sha256"
+
+      - name: Package binaries (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item build\Release\example_*.exe dist\
+          Copy-Item build\Release\generated_stubs.lib dist\ -ErrorAction SilentlyContinue
+          Compress-Archive -Path dist\* -DestinationPath "${{ matrix.artifact_name }}.zip"
+          (Get-FileHash "${{ matrix.artifact_name }}.zip" -Algorithm SHA256).Hash.ToLower() + "  ${{ matrix.artifact_name }}.zip" |
+            Out-File -FilePath "${{ matrix.artifact_name }}.zip.sha256" -Encoding ascii
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: |
+            ${{ matrix.artifact_name }}.tar.gz
+            ${{ matrix.artifact_name }}.tar.gz.sha256
+            ${{ matrix.artifact_name }}.zip
+            ${{ matrix.artifact_name }}.zip.sha256
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [package-source, build-release]
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "*"
+          merge-multiple: true
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            pytorchcppdocs-generated-src.tar.gz
+            pytorchcppdocs-generated-src.tar.gz.sha256
+            pytorchcppdocs-generated-*.tar.gz
+            pytorchcppdocs-generated-*.tar.gz.sha256
+            pytorchcppdocs-generated-*.zip
+            pytorchcppdocs-generated-*.zip.sha256
+          generate_release_notes: true

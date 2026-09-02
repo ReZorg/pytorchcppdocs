@@ -713,6 +713,17 @@ Curated examples (hand-written, doc-derived) are preserved on re-run; the
 generator only fills gaps for pages without a curated example. The generator is
 idempotent: re-running it never changes the checked-in tree, a property the CI
 workflows verify.
+
+## CI / releases
+
+- `.github/workflows/ci.yml` — codegen unit tests, a regeneration idempotency
+  check, a skeleton configure without LibTorch, LibTorch builds of every
+  example on Linux/Windows/macOS followed by the CTest smoke suite, and
+  end-to-end runs of the curated `examples/minimal` and `examples/mnist`
+  tutorial apps.
+- `.github/workflows/release.yml` — tag pushes (`v*`) rerun the full build +
+  test matrix and publish a GitHub release with the packaged generated tree
+  and per-platform example binaries.
 """
 
 
