@@ -6,9 +6,10 @@
 //
 // Adapted from docs: api/cuda/index.md
 
-#include <torch/torch.h>
-
+#include <c10/cuda/CUDAException.h>
+#include <c10/cuda/CUDAStream.h>
 #include <cuda_runtime.h>
+#include <torch/torch.h>
 
 #include <iostream>
 
@@ -25,9 +26,9 @@ __global__ void AddKernel(const float* a, const float* b, float* c, int n) {
 // Host wrapper that launches AddKernel on the current CUDA stream.
 torch::Tensor AddOnCuda(const torch::Tensor& a, const torch::Tensor& b) {
   TORCH_CHECK(a.is_cuda() && b.is_cuda(), "tensors must be CUDA tensors");
-  TORCH_CHECK(a.scalar_type() == torch::kFloat &&
-                  b.scalar_type() == torch::kFloat,
-              "tensors must be float32");
+  TORCH_CHECK(
+      a.scalar_type() == torch::kFloat && b.scalar_type() == torch::kFloat,
+      "tensors must be float32");
   TORCH_CHECK(a.sizes() == b.sizes(), "tensor shapes must match");
   auto a_contig = a.contiguous();
   auto b_contig = b.contiguous();
@@ -40,9 +41,9 @@ torch::Tensor AddOnCuda(const torch::Tensor& a, const torch::Tensor& b) {
   // Launch on PyTorch's current CUDA stream so the kernel is ordered with
   // respect to other PyTorch operations.
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
-  AddKernel<<<blocks, threads, 0, stream>>>(
-      a_contig.data_ptr<float>(), b_contig.data_ptr<float>(),
-      c.data_ptr<float>(), n);
+  AddKernel<<<blocks, threads, 0, stream>>>(a_contig.data_ptr<float>(),
+                                            b_contig.data_ptr<float>(),
+                                            c.data_ptr<float>(), n);
   C10_CUDA_KERNEL_LAUNCH_CHECK();
   return c;
 }
@@ -56,8 +57,8 @@ int main() {
   }
 
   // Create input tensors on the GPU.
-  auto options = torch::TensorOptions().dtype(torch::kFloat).device(
-      torch::kCUDA);
+  auto options =
+      torch::TensorOptions().dtype(torch::kFloat).device(torch::kCUDA);
   torch::Tensor a = torch::arange(1000, options);
   torch::Tensor b = torch::ones({1000}, options);
 

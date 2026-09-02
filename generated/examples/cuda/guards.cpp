@@ -16,8 +16,7 @@ int main() {
     return 0;
   }
 
-  const int64_t num_devices =
-      static_cast<int64_t>(torch::cuda::device_count());
+  const int64_t num_devices = static_cast<int64_t>(torch::cuda::device_count());
   std::cout << "CUDA device count: " << num_devices << std::endl;
   // Use device 1 as the "second" device when present, else reuse device 0.
   const int64_t second = num_devices > 1 ? 1 : 0;

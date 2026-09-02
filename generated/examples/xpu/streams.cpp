@@ -49,8 +49,8 @@ int main() {
   std::cout << "On high-priority stream: current stream id = "
             << c10::xpu::getCurrentXPUStream().id() << std::endl;
   c10::xpu::setCurrentXPUStream(saved_stream);
-  std::cout << "Restored stream id = "
-            << c10::xpu::getCurrentXPUStream().id() << std::endl;
+  std::cout << "Restored stream id = " << c10::xpu::getCurrentXPUStream().id()
+            << std::endl;
 
   // --- Stream synchronization ---
   // Block until a single stream has completed all queued operations.

@@ -1,7 +1,7 @@
-// Samplers: SequentialSampler, RandomSampler, DistributedRandomSampler,
-// DistributedSequentialSampler (both derived from DistributedSampler), and
-// StreamSampler, plus Sampler::save()/load() serialization and the
-// CustomBatchRequest index container.
+// Samplers: SequentialSampler, RandomSampler, DistributedRandomSampler, and
+// DistributedSequentialSampler (both derived from DistributedSampler), plus
+// StreamSampler (which yields CustomBatchRequest objects), and
+// Sampler::save()/load() serialization through archives.
 //
 // Adapted from docs: api/data/samplers.md
 
@@ -9,18 +9,21 @@
 
 #include <cstddef>
 #include <iostream>
+#include <optional>
 #include <sstream>
 #include <vector>
 
 namespace {
 
-// Drains a sampler for one epoch and returns the yielded indices.
+// Drains an index sampler for one epoch and returns the yielded indices.
+// RandomSampler, SequentialSampler, and the distributed samplers all use
+// std::vector<size_t> as their BatchRequest type.
 template <typename Sampler>
 std::vector<size_t> Drain(Sampler& sampler, size_t batch_size) {
-  torch::data::samplers::CustomBatchRequest request(batch_size);
   std::vector<size_t> indices;
   sampler.reset();
-  while (auto next = sampler.next(request)) {
+  // Sampler::next() takes the batch size and returns the next index batch.
+  while (auto next = sampler.next(batch_size)) {
     indices.insert(indices.end(), next->begin(), next->end());
   }
   return indices;
@@ -66,16 +69,18 @@ int main() {
   }
   std::cout << std::endl;
 
-  // --- StreamSampler: draws from infinite streams (BatchSize requests) ---
+  // --- StreamSampler: draws from (possibly infinite) data streams ---
+  // Instead of indices it returns BatchSize, a CustomBatchRequest describing
+  // how many samples to fetch next from the stream.
   torch::data::samplers::StreamSampler stream_sampler(
-      torch::data::samplers::BatchSize(8));
-  torch::data::samplers::CustomBatchRequest stream_request(4);
+      /*epoch_size=*/8);
   stream_sampler.reset();
   size_t stream_total = 0;
-  while (auto next = stream_sampler.next(stream_request)) {
-    stream_total += next->size();
+  while (auto batch_size = stream_sampler.next(4)) {
+    // CustomBatchRequest exposes the request through size().
+    stream_total += batch_size->size();
   }
-  std::cout << "StreamSampler yielded " << stream_total << " indices"
+  std::cout << "StreamSampler yielded " << stream_total << " batch slots"
             << std::endl;
 
   // --- Sampler serialization: save()/load() via archives ---
@@ -95,12 +100,6 @@ int main() {
   }
   std::cout << "Sampler state saved and restored (epoch index: "
             << restored.index() << ")" << std::endl;
-
-  // --- CustomBatchRequest: the index container passed to Sampler::next ---
-  // It behaves like a vector<size_t> and can carry an explicit index list.
-  torch::data::samplers::CustomBatchRequest explicit_request{0, 2, 4};
-  std::cout << "CustomBatchRequest holds " << explicit_request.size()
-            << " indices" << std::endl;
 
   std::cout << "samplers example finished" << std::endl;
   return 0;

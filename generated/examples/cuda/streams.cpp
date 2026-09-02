@@ -67,8 +67,7 @@ int main() {
   // Stream automatically restored to the default.
 
   // --- Multi-device stream management ---
-  const int64_t num_devices =
-      static_cast<int64_t>(torch::cuda::device_count());
+  const int64_t num_devices = static_cast<int64_t>(torch::cuda::device_count());
   const int64_t second = num_devices > 1 ? 1 : 0;
   std::cout << "Using devices 0 and " << second
             << " (device count: " << num_devices << ")" << std::endl;

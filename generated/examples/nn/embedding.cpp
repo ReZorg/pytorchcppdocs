@@ -46,9 +46,11 @@ int main() {
   auto bag = torch::nn::EmbeddingBag(
       torch::nn::EmbeddingBagOptions(vocab_size, embed_dim)
           .mode(torch::kMean));
-  // 1D input: one bag containing indices {1, 5, 9, 17}.
+  // 1D input with offsets: one bag containing indices {1, 5, 9, 17}.
   auto bag_input = torch::tensor({1, 5, 9, 17});
-  PrintSizes("EmbeddingBag 1-bag output", bag->forward(bag_input));
+  auto bag_offsets = torch::tensor({0});
+  PrintSizes("EmbeddingBag 1-bag output",
+             bag->forward(bag_input, bag_offsets));
 
   // Multiple bags via offsets: bag 0 = {1, 5}, bag 1 = {9, 17}.
   auto bag_inputs = torch::tensor({1, 5, 9, 17});

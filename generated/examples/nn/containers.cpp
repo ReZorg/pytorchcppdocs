@@ -11,11 +11,21 @@
 namespace {
 
 // A small custom module showing register_module and named_parameters.
-struct MLPImpl : torch::nn::Module {
+// Inheriting Cloneable<Derived> enables deep copies via clone(); Cloneable
+// requires submodule registration to happen in reset().
+struct MLPImpl : torch::nn::Cloneable<MLPImpl> {
   torch::nn::Linear fc1{nullptr};
   torch::nn::Linear fc2{nullptr};
+  int64_t in_features, hidden, out_features;
 
-  explicit MLPImpl(int64_t in_features, int64_t hidden, int64_t out_features) {
+  explicit MLPImpl(int64_t in_features, int64_t hidden, int64_t out_features)
+      : in_features(in_features),
+        hidden(hidden),
+        out_features(out_features) {
+    reset();
+  }
+
+  void reset() override {
     fc1 = register_module("fc1", torch::nn::Linear(in_features, hidden));
     fc2 = register_module("fc2", torch::nn::Linear(hidden, out_features));
   }

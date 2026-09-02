@@ -35,13 +35,15 @@ int main() {
     archive.write("epoch", torch::tensor(current_epoch));
     archive.write("loss", torch::tensor(best_loss));
 
-    // Nested archives group related values under one key hierarchy.
-    auto nested = archive.write("metadata");
+    // Nested archives group related values under one key hierarchy:
+    // write a child OutputArchive under a key of the parent.
+    torch::serialize::OutputArchive nested;
     nested.write("name", torch::tensor({1, 2, 3}));
+    archive.write("metadata", nested);
 
     archive.save_to(path);
-    std::cout << "Wrote OutputArchive with " << archive.keys().size()
-              << " top-level keys to " << path << std::endl;
+    std::cout << "Wrote OutputArchive (tensors + metadata + nested) to "
+              << path << std::endl;
   }
 
   // --- Reading values back with InputArchive (from the docs) ---
@@ -75,10 +77,15 @@ int main() {
     std::cout << "epoch: " << epoch << " loss: " << loss << std::endl;
 
     // Read the nested sub-archive.
-    auto nested = archive.read("metadata");
+    torch::serialize::InputArchive nested;
+    archive.read("metadata", nested);
     torch::Tensor name;
     nested.read("name", name);
     std::cout << "nested metadata/name: " << name << std::endl;
+
+    // InputArchive::keys() lists all top-level keys that were written.
+    std::cout << "InputArchive holds " << archive.keys().size()
+              << " top-level keys" << std::endl;
   }
 
   // Cleanup: remove the archive file this example wrote.
