@@ -26,6 +26,10 @@ endif()
 set_property(TARGET generated_stubs PROPERTY CXX_STANDARD 20)
 
 # One executable per doc-page example (compile-test smoke targets).
+add_executable(example__smoke examples/_smoke.cpp)
+target_link_libraries(example__smoke PRIVATE generated_stubs)
+set_property(TARGET example__smoke PROPERTY CXX_STANDARD 20)
+
 add_executable(example_aten_accessors examples/aten/accessors.cpp)
 target_link_libraries(example_aten_accessors PRIVATE generated_stubs)
 set_property(TARGET example_aten_accessors PROPERTY CXX_STANDARD 20)
@@ -101,6 +105,22 @@ set_property(TARGET example_data_samplers PROPERTY CXX_STANDARD 20)
 add_executable(example_data_transforms examples/data/transforms.cpp)
 target_link_libraries(example_data_transforms PRIVATE generated_stubs)
 set_property(TARGET example_data_transforms PROPERTY CXX_STANDARD 20)
+
+add_executable(example_faq_faq examples/faq/faq.cpp)
+target_link_libraries(example_faq_faq PRIVATE generated_stubs)
+set_property(TARGET example_faq_faq PROPERTY CXX_STANDARD 20)
+
+add_executable(example_frontend_end_to_end examples/frontend/end_to_end.cpp)
+target_link_libraries(example_frontend_end_to_end PRIVATE generated_stubs)
+set_property(TARGET example_frontend_end_to_end PROPERTY CXX_STANDARD 20)
+
+add_executable(example_index_index examples/index/index.cpp)
+target_link_libraries(example_index_index PRIVATE generated_stubs)
+set_property(TARGET example_index_index PROPERTY CXX_STANDARD 20)
+
+add_executable(example_installing_installing examples/installing/installing.cpp)
+target_link_libraries(example_installing_installing PRIVATE generated_stubs)
+set_property(TARGET example_installing_installing PROPERTY CXX_STANDARD 20)
 
 add_executable(example_library_custom_classes examples/library/custom_classes.cpp)
 target_link_libraries(example_library_custom_classes PRIVATE generated_stubs)
@@ -226,6 +246,7 @@ endif()
 if(MSVC AND Torch_FOUND)
   file(GLOB TORCH_DLLS "${TORCH_INSTALL_PREFIX}/lib/*.dll")
   foreach(TARGET_NAME
+          example__smoke
           example_aten_accessors
           example_aten_creation
           example_aten_indexing
@@ -245,6 +266,10 @@ if(MSVC AND Torch_FOUND)
           example_data_datasets
           example_data_samplers
           example_data_transforms
+          example_faq_faq
+          example_frontend_end_to_end
+          example_index_index
+          example_installing_installing
           example_library_custom_classes
           example_library_registration
           example_library_versioning

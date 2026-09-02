@@ -5,15 +5,17 @@
 
 #include <iostream>
 #include <memory>
+#include <utility>
+#include <vector>
 
 namespace {
 
 // A small custom module showing register_module and named_parameters.
-struct MLP : torch::nn::Module {
+struct MLPImpl : torch::nn::Module {
   torch::nn::Linear fc1{nullptr};
   torch::nn::Linear fc2{nullptr};
 
-  explicit MLP(int64_t in_features, int64_t hidden, int64_t out_features) {
+  explicit MLPImpl(int64_t in_features, int64_t hidden, int64_t out_features) {
     fc1 = register_module("fc1", torch::nn::Linear(in_features, hidden));
     fc2 = register_module("fc2", torch::nn::Linear(hidden, out_features));
   }
@@ -23,6 +25,7 @@ struct MLP : torch::nn::Module {
     return fc2->forward(x);
   }
 };
+TORCH_MODULE(MLP);
 
 void PrintSizes(const std::string& name, const torch::Tensor& t) {
   std::cout << name << " sizes: " << t.sizes() << std::endl;
@@ -58,29 +61,31 @@ int main() {
   }
   PrintSizes("ModuleList output", x);
 
-  // --- ModuleDict ---
+  // --- ModuleDict: named access via update() / operator[] / at<T>() ---
   torch::nn::ModuleDict dict;
-  dict->insert("encoder", torch::nn::Linear(10, 16));
-  dict->insert("decoder", torch::nn::Linear(16, 10));
-  auto encoded = dict->at("encoder")->as<torch::nn::Linear>()->forward(
-      torch::randn({4, 10}));
-  auto decoded =
-      dict->at("decoder")->as<torch::nn::Linear>()->forward(encoded);
+  dict->update(std::vector<std::pair<std::string, std::shared_ptr<torch::nn::Module>>>{
+      {"encoder", torch::nn::Linear(10, 16).ptr()},
+      {"decoder", torch::nn::Linear(16, 10).ptr()}});
+  auto encoded =
+      dict->at<torch::nn::LinearImpl>("encoder").forward(torch::randn({4, 10}));
+  auto decoded = dict->at<torch::nn::LinearImpl>("decoder").forward(encoded);
   PrintSizes("ModuleDict decoded output", decoded);
+  std::cout << "ModuleDict contains \"encoder\": "
+            << (dict->contains("encoder") ? "true" : "false") << std::endl;
 
-  // --- ParameterList ---
+  // --- ParameterList: parameters stored without wrapping modules ---
   torch::nn::ParameterList param_list;
-  param_list->push_back(torch::randn({3, 4}));
-  param_list->push_back(torch::randn({3, 4}));
+  param_list->append(torch::randn({3, 4}));
+  param_list->append(torch::randn({3, 4}));
   torch::Tensor param_sum = param_list->at(0) + param_list->at(1);
   PrintSizes("ParameterList element sum", param_sum);
 
-  // --- ParameterDict ---
+  // --- ParameterDict: named parameter storage ---
   torch::nn::ParameterDict param_dict;
   param_dict->insert("scale", torch::ones({3, 4}));
   param_dict->insert("bias", torch::zeros({3, 4}));
-  auto affine =
-      param_dict->at("scale") * torch::randn({3, 4}) + param_dict->at("bias");
+  auto affine = param_dict->get("scale") * torch::randn({3, 4}) +
+                param_dict->get("bias");
   PrintSizes("ParameterDict affine result", affine);
 
   // --- AnyModule: type-erased module storage ---
@@ -97,7 +102,7 @@ int main() {
   PrintSizes("Sequential with Functional output", fn_out);
 
   // --- register_module / named_parameters ---
-  auto model = std::make_shared<MLP>(784, 64, 10);
+  auto model = MLP(784, 64, 10);
   auto out = model->forward(torch::randn({2, 784}));
   PrintSizes("MLP output", out);
   std::cout << "MLP named_parameters:" << std::endl;

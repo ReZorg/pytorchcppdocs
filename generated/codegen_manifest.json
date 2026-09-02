@@ -1,7 +1,7 @@
 {
   "pages_parsed": 63,
-  "stub_headers": 63,
-  "examples": 48,
-  "gap_examples": 15,
+  "stub_headers": 169,
+  "examples": 53,
+  "gap_examples": 4,
   "coverage_total": 166
 }

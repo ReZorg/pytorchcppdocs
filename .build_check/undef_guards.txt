@@ -1,0 +1,30 @@
+                 U c10::cuda::CUDACachingAllocator::allocator
+                 U c10::cuda::CUDAErrorLogCapture::CUDAErrorLogCapture()
+                 U c10::cuda::CUDAStream::query() const
+                 U c10::cuda::CUDAStream::stream() const
+                 U c10::cuda::CUDAStream::synchronize() const
+                 U c10::cuda::ExchangeDevice(signed char)
+                 U c10::cuda::GetDevice(signed char*)
+                 U c10::cuda::MaybeSetDevice(signed char)
+                 U c10::cuda::SetDevice(signed char, bool)
+                 U c10::cuda::c10_cuda_check_implementation(int, char const*, char const*, unsigned int, bool, c10::cuda::CUDAErrorLogCapture*)
+                 U c10::cuda::current_device()
+                 U c10::cuda::device_count()
+                 U c10::cuda::getCurrentCUDAStream(signed char)
+                 U c10::cuda::getDefaultCUDAStream(signed char)
+                 U c10::cuda::getStreamFromPool(bool, signed char)
+                 U c10::cuda::getStreamFromPool(int, signed char)
+                 U c10::cuda::setCurrentCUDAStream(c10::cuda::CUDAStream)
+                 U cudaDeviceSynchronize
+                 U cudaEventCreateWithFlags
+                 U cudaEventDestroy
+                 U cudaEventElapsedTime
+                 U cudaEventQuery
+                 U cudaEventRecord
+                 U cudaEventSynchronize
+                 U cudaGetErrorString
+                 U cudaGetLastError
+                 U cudaStreamIsCapturing
+                 U cudaStreamWaitEvent
+                 U torch::cuda::device_count()
+                 U torch::cuda::is_available()

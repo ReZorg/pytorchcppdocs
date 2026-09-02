@@ -11,13 +11,13 @@ documented PyTorch C++ API as a buildable codebase.
 ## Layout
 
 - `include/` — API-surface stub headers mirroring the real LibTorch header
-  paths recorded under `_coverage/` (63 stubs generated).
+  paths recorded under `_coverage/` (169 stubs generated).
 - `include/torch/**/*.hpp` — header-only template stubs (`nn::Module`,
   `data::Dataset`, `OrderedDict`).
 - `src/` — non-template reference implementations compiled into the
   `generated_stubs` static library.
 - `examples/<module>/` — one runnable example per documentation page
-  (48 examples). Each example has a single `main()` and
+  (53 examples). Each example has a single `main()` and
   doubles as a compile-test / smoke test.
 - `coverage_report.md` — diff of the generated `include/` tree against the
   166 documented headers in `_coverage/`.
