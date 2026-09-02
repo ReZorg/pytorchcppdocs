@@ -17,7 +17,7 @@ documented PyTorch C++ API as a buildable codebase.
 - `src/` — non-template reference implementations compiled into the
   `generated_stubs` static library.
 - `examples/<module>/` — one runnable example per documentation page
-  (53 examples). Each example has a single `main()` and
+  (52 examples). Each example has a single `main()` and
   doubles as a compile-test / smoke test.
 - `coverage_report.md` — diff of the generated `include/` tree against the
   166 documented headers in `_coverage/`.

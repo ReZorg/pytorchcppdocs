@@ -26,10 +26,6 @@ endif()
 set_property(TARGET generated_stubs PROPERTY CXX_STANDARD 20)
 
 # One executable per doc-page example (compile-test smoke targets).
-add_executable(example__smoke examples/_smoke.cpp)
-target_link_libraries(example__smoke PRIVATE generated_stubs)
-set_property(TARGET example__smoke PROPERTY CXX_STANDARD 20)
-
 add_executable(example_aten_accessors examples/aten/accessors.cpp)
 target_link_libraries(example_aten_accessors PRIVATE generated_stubs)
 set_property(TARGET example_aten_accessors PROPERTY CXX_STANDARD 20)
@@ -246,7 +242,6 @@ endif()
 if(MSVC AND Torch_FOUND)
   file(GLOB TORCH_DLLS "${TORCH_INSTALL_PREFIX}/lib/*.dll")
   foreach(TARGET_NAME
-          example__smoke
           example_aten_accessors
           example_aten_creation
           example_aten_indexing
