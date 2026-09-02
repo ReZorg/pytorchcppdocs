@@ -45,6 +45,22 @@ The build follows the documented LibTorch CMake pattern
 (`find_package(Torch REQUIRED)`, `${TORCH_CXX_FLAGS}`, C++20, MSVC DLL copy).
 CUDA `.cu` targets are only configured when `check_language(CUDA)` finds NVCC.
 
+## Testing
+
+Every example is registered with CTest and runs as a smoke test once the tree
+is built against LibTorch:
+
+```bash
+./validate.sh /path/to/libtorch
+ctest --test-dir build --output-on-failure -j$(nproc)
+```
+
+Generator unit tests (stdlib `unittest`, no LibTorch needed):
+
+```bash
+python3 -m unittest codegen.test_generate -v   # from the repo root
+```
+
 ## Regenerating
 
 ```bash
@@ -52,4 +68,6 @@ python3 ../codegen/generate.py
 ```
 
 Curated examples (hand-written, doc-derived) are preserved on re-run; the
-generator only fills gaps for pages without a curated example.
+generator only fills gaps for pages without a curated example. The generator is
+idempotent: re-running it never changes the checked-in tree, a property the CI
+workflows verify.
