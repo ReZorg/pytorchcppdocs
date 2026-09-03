@@ -6,12 +6,12 @@
 #ifndef GENERATED_TORCH_NN_MODULE_H_
 #define GENERATED_TORCH_NN_MODULE_H_
 
-namespace generated {
+namespace torch::nn {
 class Module {
  public:
   Module() = default;
-  ~Module() = default;
+  virtual ~Module() = default;
 };
-}  // namespace generated
+}  // namespace torch::nn
 
 #endif  // GENERATED_TORCH_NN_MODULE_H_

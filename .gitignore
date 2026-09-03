@@ -1,0 +1,19 @@
+# CMake build trees
+build/
+build-*/
+out/
+
+# LibTorch SDK downloads used by CI validation
+libtorch/
+
+# MNIST data / checkpoints produced by the e2e examples
+examples/mnist/data/
+examples/mnist/net.pt
+net.pt
+
+# Python caches
+__pycache__/
+*.pyc
+
+# OS noise
+.DS_Store

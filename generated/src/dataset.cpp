@@ -30,9 +30,7 @@ class SampleDataset
   torch::Tensor target_;
 };
 
-torch::data::datasets::SharedBatchDataset<
-    torch::data::datasets::MapDataset<SampleDataset, torch::data::transforms::Stack<>>>
-make_sample_batches(int64_t samples, int64_t features) {
+auto make_sample_batches(int64_t samples, int64_t features) {
   auto data = torch::randn({samples, features});
   auto target = torch::randint(0, 2, {samples});
   return SampleDataset(std::move(data), std::move(target))
