@@ -129,9 +129,18 @@ jobs:
       - name: Run MNIST example end-to-end
         if: matrix.example == 'mnist'
         run: |
-          # The tutorial trains a hardcoded 10 epochs on the real MNIST dataset
-          # (downloaded at startup), so bound the run: a timeout after the
-          # training loop has started still proves the end-to-end path.
+          # The C++ MNIST dataset does not auto-download, so fetch the raw
+          # IDX files first (same URLs the torchvision MNIST loader uses).
+          mkdir -p data
+          base="https://ossci-datasets.s3.amazonaws.com/mnist"
+          for f in train-images-idx3-ubyte train-labels-idx1-ubyte \
+                   t10k-images-idx3-ubyte t10k-labels-idx1-ubyte; do
+            curl -fSL --retry 3 "$base/$f.gz" | gzip -d > "data/$f"
+          done
+
+          # The tutorial trains a hardcoded 10 epochs; bound the run so the
+          # e2e path (data loading + training loop) is exercised without
+          # paying for a full training run in CI.
           set +e
           timeout --preserve-status 180 ./build-${{ matrix.example }}/mnist
           rc=$?

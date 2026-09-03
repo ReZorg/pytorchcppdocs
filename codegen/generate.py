@@ -523,6 +523,23 @@ torch::Tensor train_step(Net& model, torch::optim::Optimizer& optimizer,
     return files
 
 
+def torch_example_supported(example: Path) -> tuple[bool, str | None]:
+    """Return (always_buildable, required CMake feature) for one example.
+
+    Examples exercising APIs that are missing from older LibTorch releases are
+    gated behind a configure-time feature check rather than dropped entirely:
+    with a new enough LibTorch they are built and tested like the rest.
+    """
+    rel = example.relative_to(EXAMPLES_DIR).as_posix()
+    if rel.startswith("stable/"):
+        return False, "HAVE_STABLE_OPS"
+    if rel.startswith("xpu/"):
+        return False, "HAVE_XPU_STREAMS"
+    if rel.startswith("cuda/"):
+        return False, "HAVE_CUDA_HEADERS"
+    return True, None
+
+
 def cmake_lists(example_files: list[Path], cu_files: list[Path]) -> str:
     lines = [
         "cmake_minimum_required(VERSION 3.18 FATAL_ERROR)",
@@ -561,6 +578,38 @@ def cmake_lists(example_files: list[Path], cu_files: list[Path]) -> str:
         "# runs to exit code 0 (hardware-dependent examples skip gracefully).",
         "enable_testing()",
         "",
+        "# Some documented APIs are not present in every LibTorch build:",
+        "#   - the torch::stable ops library requires PyTorch >= 2.8",
+        "#   - CUDA headers (c10/cuda/*) are only complete in CUDA-enabled builds",
+        "#   - XPU stream headers are only complete in XPU-enabled builds",
+        "# Detect support at configure time and skip those examples when the",
+        "# installed LibTorch predates them (e.g. the 2.7.1 wheels).",
+        "if(Torch_FOUND)",
+        "  include(CheckCXXSourceCompiles)",
+        '  set(CMAKE_REQUIRED_INCLUDES "${TORCH_INCLUDE_DIRS}")',
+        '  set(CMAKE_REQUIRED_FLAGS "${TORCH_CXX_FLAGS}")',
+        '  check_cxx_source_compiles("'
+        "#include <torch/csrc/stable/ops.h>\\n"
+        'int main() { return 0; }" HAVE_STABLE_OPS)',
+        '  check_cxx_source_compiles("'
+        "#include <c10/cuda/CUDAGuard.h>\\n"
+        'int main() { return 0; }" HAVE_CUDA_HEADERS)',
+        '  check_cxx_source_compiles("'
+        "#include <c10/xpu/XPUStream.h>\\n"
+        'int main() { return 0; }" HAVE_XPU_STREAMS)',
+        "  unset(CMAKE_REQUIRED_INCLUDES)",
+        "  unset(CMAKE_REQUIRED_FLAGS)",
+        "  foreach(FEATURE HAVE_STABLE_OPS HAVE_CUDA_HEADERS HAVE_XPU_STREAMS)",
+        "    if(NOT ${FEATURE})",
+        '      message(WARNING "LibTorch lacks ${FEATURE} - related examples are skipped.")',
+        "    endif()",
+        "  endforeach()",
+        "else()",
+        "  set(HAVE_STABLE_OPS TRUE)",
+        "  set(HAVE_CUDA_HEADERS TRUE)",
+        "  set(HAVE_XPU_STREAMS TRUE)",
+        "endif()",
+        "",
         "# One executable per doc-page example (compile-test smoke targets).",
     ]
     for example in example_files:
@@ -569,16 +618,22 @@ def cmake_lists(example_files: list[Path], cu_files: list[Path]) -> str:
             r"[^A-Za-z0-9]", "_", example.relative_to(EXAMPLES_DIR).with_suffix("").as_posix()
         )
         test_name = target[len("example_"):]
+        _, feature = torch_example_supported(example)
+        if feature:
+            lines.append(f"if({feature})")
+        prefix = "  " if feature else ""
         lines += [
-            f"add_executable({target} {rel})",
-            f"target_link_libraries({target} PRIVATE generated_stubs)",
-            f"set_property(TARGET {target} PROPERTY CXX_STANDARD 20)",
-            f"add_test(NAME {test_name} COMMAND {target})",
-            "",
+            f"{prefix}add_executable({target} {rel})",
+            f"{prefix}target_link_libraries({target} PRIVATE generated_stubs)",
+            f"{prefix}set_property(TARGET {target} PROPERTY CXX_STANDARD 20)",
+            f"{prefix}add_test(NAME {test_name} COMMAND {target})",
         ]
+        if feature:
+            lines.append("endif()")
+        lines.append("")
     if cu_files:
         lines += [
-            "if(CMAKE_CUDA_COMPILER AND Torch_FOUND)",
+            "if(CMAKE_CUDA_COMPILER AND Torch_FOUND AND HAVE_CUDA_HEADERS)",
             "  enable_language(CUDA)",
         ]
         for cu in cu_files:
@@ -601,18 +656,22 @@ def cmake_lists(example_files: list[Path], cu_files: list[Path]) -> str:
         '  file(GLOB TORCH_DLLS "${TORCH_INSTALL_PREFIX}/lib/*.dll")',
         "  foreach(TARGET_NAME",
     ]
+    # Only targets that are always defined may be listed unconditionally.
     all_targets = [
         "example_"
         + re.sub(r"[^A-Za-z0-9]", "_", p.relative_to(EXAMPLES_DIR).with_suffix("").as_posix())
         for p in example_files
+        if torch_example_supported(p)[0]
     ]
     for t in all_targets:
         lines.append(f"          {t}")
     lines += [
         "  )",
-        "    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD",
-        "      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${TORCH_DLLS}",
-        "      $<TARGET_FILE_DIR:${TARGET_NAME}>)",
+        "    if(TARGET ${TARGET_NAME})",
+        "      add_custom_command(TARGET ${TARGET_NAME} POST_BUILD",
+        "        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${TORCH_DLLS}",
+        "        $<TARGET_FILE_DIR:${TARGET_NAME}>)",
+        "    endif()",
         "  endforeach()",
         "endif(MSVC)",
         "",
@@ -699,6 +758,12 @@ is built against LibTorch:
 ./validate.sh /path/to/libtorch
 ctest --test-dir build --output-on-failure -j$(nproc)
 ```
+
+Examples that exercise APIs missing from the installed LibTorch are skipped at
+configure time via feature checks: `stable/*` needs `torch::stable` ops
+(PyTorch ≥ 2.8), `cuda/*` needs CUDA-enabled headers, and `xpu/*` needs
+XPU-enabled headers. The CI matrix uses the LibTorch 2.7.1 wheels, where those
+three groups are skipped.
 
 Generator unit tests (stdlib `unittest`, no LibTorch needed):
 

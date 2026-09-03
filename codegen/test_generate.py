@@ -361,7 +361,9 @@ class TestCmakeLists(unittest.TestCase):
         self.assertIn("add_test(NAME aten_tensor COMMAND example_aten_tensor)", cmake)
         self.assertIn("add_test(NAME aten_creation COMMAND example_aten_creation)", cmake)
         # CUDA targets stay gated behind compiler detection and LibTorch.
-        self.assertIn("if(CMAKE_CUDA_COMPILER AND Torch_FOUND)", cmake)
+        self.assertIn(
+            "if(CMAKE_CUDA_COMPILER AND Torch_FOUND AND HAVE_CUDA_HEADERS)", cmake
+        )
         self.assertIn("add_executable(example_cuda_kernel examples/cuda/kernel.cu)", cmake)
         self.assertIn("add_test(NAME cuda_kernel COMMAND example_cuda_kernel)", cmake)
         self.assertIn("if(MSVC AND Torch_FOUND)", cmake)

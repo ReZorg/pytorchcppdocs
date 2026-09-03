@@ -55,6 +55,12 @@ is built against LibTorch:
 ctest --test-dir build --output-on-failure -j$(nproc)
 ```
 
+Examples that exercise APIs missing from the installed LibTorch are skipped at
+configure time via feature checks: `stable/*` needs `torch::stable` ops
+(PyTorch ≥ 2.8), `cuda/*` needs CUDA-enabled headers, and `xpu/*` needs
+XPU-enabled headers. The CI matrix uses the LibTorch 2.7.1 wheels, where those
+three groups are skipped.
+
 Generator unit tests (stdlib `unittest`, no LibTorch needed):
 
 ```bash

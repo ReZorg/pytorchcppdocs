@@ -34,6 +34,32 @@ set_property(TARGET generated_stubs PROPERTY CXX_STANDARD 20)
 # runs to exit code 0 (hardware-dependent examples skip gracefully).
 enable_testing()
 
+# Some documented APIs are not present in every LibTorch build:
+#   - the torch::stable ops library requires PyTorch >= 2.8
+#   - CUDA headers (c10/cuda/*) are only complete in CUDA-enabled builds
+#   - XPU stream headers are only complete in XPU-enabled builds
+# Detect support at configure time and skip those examples when the
+# installed LibTorch predates them (e.g. the 2.7.1 wheels).
+if(Torch_FOUND)
+  include(CheckCXXSourceCompiles)
+  set(CMAKE_REQUIRED_INCLUDES "${TORCH_INCLUDE_DIRS}")
+  set(CMAKE_REQUIRED_FLAGS "${TORCH_CXX_FLAGS}")
+  check_cxx_source_compiles("#include <torch/csrc/stable/ops.h>\nint main() { return 0; }" HAVE_STABLE_OPS)
+  check_cxx_source_compiles("#include <c10/cuda/CUDAGuard.h>\nint main() { return 0; }" HAVE_CUDA_HEADERS)
+  check_cxx_source_compiles("#include <c10/xpu/XPUStream.h>\nint main() { return 0; }" HAVE_XPU_STREAMS)
+  unset(CMAKE_REQUIRED_INCLUDES)
+  unset(CMAKE_REQUIRED_FLAGS)
+  foreach(FEATURE HAVE_STABLE_OPS HAVE_CUDA_HEADERS HAVE_XPU_STREAMS)
+    if(NOT ${FEATURE})
+      message(WARNING "LibTorch lacks ${FEATURE} - related examples are skipped.")
+    endif()
+  endforeach()
+else()
+  set(HAVE_STABLE_OPS TRUE)
+  set(HAVE_CUDA_HEADERS TRUE)
+  set(HAVE_XPU_STREAMS TRUE)
+endif()
+
 # One executable per doc-page example (compile-test smoke targets).
 add_executable(example_aten_accessors examples/aten/accessors.cpp)
 target_link_libraries(example_aten_accessors PRIVATE generated_stubs)
@@ -95,20 +121,26 @@ target_link_libraries(example_c10_utilities PRIVATE generated_stubs)
 set_property(TARGET example_c10_utilities PROPERTY CXX_STANDARD 20)
 add_test(NAME c10_utilities COMMAND example_c10_utilities)
 
-add_executable(example_cuda_guards examples/cuda/guards.cpp)
-target_link_libraries(example_cuda_guards PRIVATE generated_stubs)
-set_property(TARGET example_cuda_guards PROPERTY CXX_STANDARD 20)
-add_test(NAME cuda_guards COMMAND example_cuda_guards)
+if(HAVE_CUDA_HEADERS)
+  add_executable(example_cuda_guards examples/cuda/guards.cpp)
+  target_link_libraries(example_cuda_guards PRIVATE generated_stubs)
+  set_property(TARGET example_cuda_guards PROPERTY CXX_STANDARD 20)
+  add_test(NAME cuda_guards COMMAND example_cuda_guards)
+endif()
 
-add_executable(example_cuda_streams examples/cuda/streams.cpp)
-target_link_libraries(example_cuda_streams PRIVATE generated_stubs)
-set_property(TARGET example_cuda_streams PROPERTY CXX_STANDARD 20)
-add_test(NAME cuda_streams COMMAND example_cuda_streams)
+if(HAVE_CUDA_HEADERS)
+  add_executable(example_cuda_streams examples/cuda/streams.cpp)
+  target_link_libraries(example_cuda_streams PRIVATE generated_stubs)
+  set_property(TARGET example_cuda_streams PROPERTY CXX_STANDARD 20)
+  add_test(NAME cuda_streams COMMAND example_cuda_streams)
+endif()
 
-add_executable(example_cuda_utilities examples/cuda/utilities.cpp)
-target_link_libraries(example_cuda_utilities PRIVATE generated_stubs)
-set_property(TARGET example_cuda_utilities PROPERTY CXX_STANDARD 20)
-add_test(NAME cuda_utilities COMMAND example_cuda_utilities)
+if(HAVE_CUDA_HEADERS)
+  add_executable(example_cuda_utilities examples/cuda/utilities.cpp)
+  target_link_libraries(example_cuda_utilities PRIVATE generated_stubs)
+  set_property(TARGET example_cuda_utilities PROPERTY CXX_STANDARD 20)
+  add_test(NAME cuda_utilities COMMAND example_cuda_utilities)
+endif()
 
 add_executable(example_data_dataloader examples/data/dataloader.cpp)
 target_link_libraries(example_data_dataloader PRIVATE generated_stubs)
@@ -265,32 +297,42 @@ target_link_libraries(example_serialize_save_load PRIVATE generated_stubs)
 set_property(TARGET example_serialize_save_load PROPERTY CXX_STANDARD 20)
 add_test(NAME serialize_save_load COMMAND example_serialize_save_load)
 
-add_executable(example_stable_operators examples/stable/operators.cpp)
-target_link_libraries(example_stable_operators PRIVATE generated_stubs)
-set_property(TARGET example_stable_operators PROPERTY CXX_STANDARD 20)
-add_test(NAME stable_operators COMMAND example_stable_operators)
+if(HAVE_STABLE_OPS)
+  add_executable(example_stable_operators examples/stable/operators.cpp)
+  target_link_libraries(example_stable_operators PRIVATE generated_stubs)
+  set_property(TARGET example_stable_operators PROPERTY CXX_STANDARD 20)
+  add_test(NAME stable_operators COMMAND example_stable_operators)
+endif()
 
-add_executable(example_stable_registration examples/stable/registration.cpp)
-target_link_libraries(example_stable_registration PRIVATE generated_stubs)
-set_property(TARGET example_stable_registration PROPERTY CXX_STANDARD 20)
-add_test(NAME stable_registration COMMAND example_stable_registration)
+if(HAVE_STABLE_OPS)
+  add_executable(example_stable_registration examples/stable/registration.cpp)
+  target_link_libraries(example_stable_registration PRIVATE generated_stubs)
+  set_property(TARGET example_stable_registration PROPERTY CXX_STANDARD 20)
+  add_test(NAME stable_registration COMMAND example_stable_registration)
+endif()
 
-add_executable(example_stable_utilities examples/stable/utilities.cpp)
-target_link_libraries(example_stable_utilities PRIVATE generated_stubs)
-set_property(TARGET example_stable_utilities PROPERTY CXX_STANDARD 20)
-add_test(NAME stable_utilities COMMAND example_stable_utilities)
+if(HAVE_STABLE_OPS)
+  add_executable(example_stable_utilities examples/stable/utilities.cpp)
+  target_link_libraries(example_stable_utilities PRIVATE generated_stubs)
+  set_property(TARGET example_stable_utilities PROPERTY CXX_STANDARD 20)
+  add_test(NAME stable_utilities COMMAND example_stable_utilities)
+endif()
 
-add_executable(example_xpu_streams examples/xpu/streams.cpp)
-target_link_libraries(example_xpu_streams PRIVATE generated_stubs)
-set_property(TARGET example_xpu_streams PROPERTY CXX_STANDARD 20)
-add_test(NAME xpu_streams COMMAND example_xpu_streams)
+if(HAVE_XPU_STREAMS)
+  add_executable(example_xpu_streams examples/xpu/streams.cpp)
+  target_link_libraries(example_xpu_streams PRIVATE generated_stubs)
+  set_property(TARGET example_xpu_streams PROPERTY CXX_STANDARD 20)
+  add_test(NAME xpu_streams COMMAND example_xpu_streams)
+endif()
 
-add_executable(example_xpu_utilities examples/xpu/utilities.cpp)
-target_link_libraries(example_xpu_utilities PRIVATE generated_stubs)
-set_property(TARGET example_xpu_utilities PROPERTY CXX_STANDARD 20)
-add_test(NAME xpu_utilities COMMAND example_xpu_utilities)
+if(HAVE_XPU_STREAMS)
+  add_executable(example_xpu_utilities examples/xpu/utilities.cpp)
+  target_link_libraries(example_xpu_utilities PRIVATE generated_stubs)
+  set_property(TARGET example_xpu_utilities PROPERTY CXX_STANDARD 20)
+  add_test(NAME xpu_utilities COMMAND example_xpu_utilities)
+endif()
 
-if(CMAKE_CUDA_COMPILER AND Torch_FOUND)
+if(CMAKE_CUDA_COMPILER AND Torch_FOUND AND HAVE_CUDA_HEADERS)
   enable_language(CUDA)
   add_executable(example_cuda_kernel examples/cuda/kernel.cu)
   target_link_libraries(example_cuda_kernel PRIVATE generated_stubs)
@@ -315,9 +357,6 @@ if(MSVC AND Torch_FOUND)
           example_c10_streams
           example_c10_types
           example_c10_utilities
-          example_cuda_guards
-          example_cuda_streams
-          example_cuda_utilities
           example_data_dataloader
           example_data_datasets
           example_data_samplers
@@ -349,14 +388,11 @@ if(MSVC AND Torch_FOUND)
           example_serialize_archives
           example_serialize_checkpoints
           example_serialize_save_load
-          example_stable_operators
-          example_stable_registration
-          example_stable_utilities
-          example_xpu_streams
-          example_xpu_utilities
   )
-    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${TORCH_DLLS}
-      $<TARGET_FILE_DIR:${TARGET_NAME}>)
+    if(TARGET ${TARGET_NAME})
+      add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${TORCH_DLLS}
+        $<TARGET_FILE_DIR:${TARGET_NAME}>)
+    endif()
   endforeach()
 endif(MSVC)
