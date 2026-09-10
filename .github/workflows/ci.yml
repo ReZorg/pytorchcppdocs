@@ -85,7 +85,20 @@ jobs:
 
       - name: Build all targets
         shell: bash
-        run: cmake --build build --config Release --parallel
+        run: |
+          # Each example TU includes <torch/torch.h> and needs ~2 GB to compile
+          # with GCC at C++20. Unbounded `--parallel` spawns one job per core,
+          # which OOM-kills the ~7 GB ubuntu-latest runner (the run dies with
+          # exit 143 / "runner has received a shutdown signal"). Cap Linux jobs
+          # to a level the runner's memory can sustain; MSVC on Windows and the
+          # larger macOS runners tolerate full parallelism.
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            jobs=2
+          else
+            jobs=$( (command -v nproc >/dev/null && nproc) || sysctl -n hw.ncpu || echo 4 )
+          fi
+          echo "Building with $jobs parallel jobs (RUNNER_OS=$RUNNER_OS)"
+          cmake --build build --config Release --parallel "$jobs"
 
       - name: Run example smoke tests (ctest)
         shell: bash
